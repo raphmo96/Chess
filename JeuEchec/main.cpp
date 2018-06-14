@@ -6,12 +6,12 @@ and may not be redistributed without written permission.*/
 #include <SDL_image.h>
 #include <stdio.h>
 #include <string>
-#include "WindowRenderer.h"
+#include "Board.h"
 #include <iostream>
 
 int main(int argc, char* args[])
 {
-	WindowRenderer renderer{};
+	Board renderer{};
 	//Start up SDL and create window
 	if (!renderer.init())
 	{
@@ -41,25 +41,27 @@ int main(int argc, char* args[])
 					if (e.type == SDL_QUIT) {
 						quit = true;
 					}
-					if (e.type == SDL_MOUSEMOTION) {
-						int x = 0;
-						int y = 0;
-						SDL_GetMouseState(&x, &y);
-						std::cout << x << y << std::endl;
+					if (e.type == SDL_MOUSEBUTTONDOWN) {
+						if (e.type == SDL_MOUSEMOTION) {
+							int x = 0;
+							int y = 0;
+							SDL_GetMouseState(&x, &y);
+							std::cout << x << y << std::endl;
+						}
 					}
 				}
+
+				//Apply the PNG image
+				renderer.BlitSurface();
+
+				//Update the surface
+				renderer.UpdateWindow();
 			}
-
-			//Apply the PNG image
-			renderer.BlitSurface();
-
-			//Update the surface
-			renderer.UpdateWindow();
 		}
-	}
-	system("pause");
-	//Free resources and close SDL
-	renderer.close();
+		system("pause");
+		//Free resources and close SDL
+		renderer.close();
 
+	}
 	return 0;
 }
