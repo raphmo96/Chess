@@ -1,17 +1,20 @@
 #pragma once
-#include "Piece.h"	
+#include <SDL.h>
+#include <SDL_image.h>
+
+class Piece;
+
 class BoardCase
 {
 public:
-	BoardCase();
+	BoardCase(SDL_Rect*);
 	~BoardCase();
 	Piece* GetPiece() { return m_Piece; };
 	void SetPiece(Piece* a_Piece) { m_Piece = a_Piece; };
-	void DrawPiece();
+	void DrawPiece(SDL_Surface*);
 private:
 	Piece * m_Piece;
-	int m_X;
-	int m_Y;
+	SDL_Rect* m_Rect;
 
 };
 

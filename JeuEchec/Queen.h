@@ -4,7 +4,7 @@ class Queen :
 	public Piece
 {
 public:
-	Queen(bool);
+	Queen(bool, SDL_Surface*);
 	~Queen();
 };
 

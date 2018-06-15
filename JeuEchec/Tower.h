@@ -4,7 +4,7 @@ class Tower :
 	public Piece
 {
 public:
-	Tower(bool);
+	Tower(bool,SDL_Surface*);
 	~Tower();
 };
 

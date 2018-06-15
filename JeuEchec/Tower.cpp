@@ -2,7 +2,7 @@
 
 
 
-Tower::Tower(bool a_isWhite):Piece(a_isWhite)
+Tower::Tower(bool a_isWhite, SDL_Surface* a_Window) :Piece(a_isWhite, a_Window)
 {
 }
 

@@ -2,8 +2,7 @@
 
 
 
-Pawn::Pawn(bool a_isWhite) :Piece(a_isWhite)
-{
+Pawn::Pawn(bool a_isWhite, SDL_Surface* a_Image) :Piece(a_isWhite, a_Image) {
 
 }
 

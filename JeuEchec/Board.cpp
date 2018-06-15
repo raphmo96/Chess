@@ -1,10 +1,15 @@
 #include "Board.h"
+#include "BoardCase.h"
+#include "Bishop.h"
+#include "King.h"
+#include "Knight.h"
+#include "Pawn.h"
+#include "Queen.h"
+#include "Tower.h"
 
 Board::Board()
 {
-	InitCases();
 }
-
 
 Board::~Board()
 {
@@ -25,7 +30,7 @@ bool Board::init()
 	else
 	{
 		//Create window
-		m_Window = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		m_Window = SDL_CreateWindow("Chess", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (m_Window == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -44,6 +49,10 @@ bool Board::init()
 			{
 				//Get window surface
 				m_ScreenSurface = SDL_GetWindowSurface(m_Window);
+				loadMedia();
+				InitCases();
+				InitChestPieces();
+
 			}
 		}
 	}
@@ -57,7 +66,7 @@ bool Board::loadMedia()
 	bool success = true;
 
 	//Load PNG surface
-	m_BoardImage = loadSurface("Images\\Board.png");
+	m_BoardImage = loadSurface(IMAGE_PATH + "Board.png");
 	if (m_BoardImage == NULL)
 	{
 		printf("Failed to load PNG image!\n");
@@ -87,18 +96,27 @@ SDL_Surface* Board::loadSurface(std::string path)
 }
 
 bool Board::InitCases() {
-	SDL_Rect rect = { 0, 0, BOARD_WIDTH / GRID_COLUMNS, BOARD_HEIGHT / GRID_ROWS };
+	SDL_Rect rect = { 0, 0, CELLSIZE, CELLSIZE };
 	for (int i = 0; i < GRID_ROWS; i++) {
 		m_BoardCases.push_back(std::vector<BoardCase*>());
 		for (int j = 0; j < GRID_COLUMNS; j++) {
-			m_BoardCases[i].push_back(new BoardCase());//Add X and Y coordinates based on indexes
+			m_BoardCases[i].push_back(new BoardCase(new SDL_Rect({ CELLSIZE*j, CELLSIZE*i, CELLSIZE, CELLSIZE })));//Add X and Y coordinates based on indexes
 		}
 	}
 	return false;
 }
 
+
+void Board::DrawBoard() {
+	for (int i = 0; i < GRID_ROWS; i++) {
+		for (int j = 0; j < GRID_COLUMNS; j++) {
+			m_BoardCases[i][j]->DrawPiece(m_ScreenSurface);
+		}
+	}
+}
+
 BoardCase* Board::GetCaseAtPos(int x, int y) {
-	return NULL;
+	return m_BoardCases[x][y];
 }
 
 void Board::InitChestPieces() {
@@ -113,38 +131,37 @@ void Board::InitChestPieces() {
 				case 0:
 				case 7:
 					//tower
-					newPiece = new Tower(i > 3);
+					newPiece = new Tower(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "Tower.png"));
 					break;
 				case 1:
 				case 6:
 					//Knight
-					newPiece = new Knight(i > 3);
+					newPiece = new Knight(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "Knight.png"));
 					break;
 				case 2:
 				case 5:
 					//bishop
-					newPiece = new Bishop(i > 3);
+					newPiece = new Bishop(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "Bishop.png"));
 					break;
 				case 3:
 					//Queen
-					newPiece = new Queen(i > 3);
+					newPiece = new Queen(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "Queen.png"));
 					break;
 				case 4:
 					//King
-					newPiece = new King(i > 3);
+					newPiece = new King(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "King.png"));
 					break;
 				}
 				boardCase->SetPiece(newPiece);
 			}
 			else if (i == 1 || i == 6) {
 				boardCase = GetCaseAtPos(i, j);
-				boardCase->SetPiece(new Pawn(i > 3));
+				boardCase->SetPiece(new Pawn(i > 3, loadSurface(IMAGE_PATH + (i > 3 ? "B" : "W") + "Pawn.png")));
 			}
 			if (boardCase != nullptr) {
-				boardCase->DrawPiece();
+				boardCase->DrawPiece(m_ScreenSurface);
 				boardCase = nullptr;
 			}
-
 		}
 	}
 };

@@ -2,7 +2,7 @@
 
 
 
-King::King(bool a_isWhite) :Piece(a_isWhite)
+King::King(bool a_isWhite, SDL_Surface* a_Window) :Piece(a_isWhite, a_Window)
 {
 }
 

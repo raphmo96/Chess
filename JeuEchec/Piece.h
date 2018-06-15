@@ -1,6 +1,8 @@
 #pragma once
-#include <string>
+#include <SDL.h>
+#include <SDL_image.h>
 #include <vector>
+
 struct Coordinates {
 	int x;
 	int y;
@@ -9,9 +11,9 @@ struct Coordinates {
 class Piece
 {
 public:
-	Piece(bool);
+	Piece(bool, SDL_Surface*);
 	~Piece();
-	//bool virtual Draw();
+	void virtual Draw(SDL_Surface*, SDL_Rect*);
 	//Coordinates virtual GetPos();
 	//bool virtual CanMove();
 
@@ -24,5 +26,6 @@ private:
 	int m_YMovement;
 	std::string m_Name;
 	std::vector<Coordinates> m_PossibleMove;
+	SDL_Surface* m_Image;
 };
 

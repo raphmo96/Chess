@@ -4,7 +4,7 @@ class Bishop :
 	public Piece
 {
 public:
-	Bishop(bool);
+	Bishop(bool, SDL_Surface*);
 	~Bishop();
 };
 

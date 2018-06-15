@@ -1,17 +1,10 @@
+#pragma once
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
-#include "boardCase.h"
-#include "Bishop.h"
-#include "King.h"
-#include "Knight.h"
-#include "Pawn.h"
-#include "Queen.h"
-#include "Tower.h"
 
-#pragma once
+class BoardCase;
 
 class Board
 {
@@ -26,6 +19,8 @@ public:
 	const int BOARD_HEIGHT = 800;
 	const int GRID_COLUMNS = 8;
 	const int GRID_ROWS = 8;
+	const int CELLSIZE = BOARD_HEIGHT / GRID_ROWS;
+	const std::string IMAGE_PATH = "Images\\";
 
 	//Starts up SDL and creates window
 	bool init();
@@ -37,11 +32,11 @@ public:
 	void close();
 
 	void UpdateWindow() { SDL_UpdateWindowSurface(m_Window); };
-
+	//IMAGE       RECT   WINDOW           RECT
 	void BlitSurface() { SDL_BlitSurface(m_BoardImage, NULL, m_ScreenSurface, NULL); }
 
-	bool InitCases();
 
+	void DrawBoard();
 private:
 	std::vector<std::vector<BoardCase*>> m_BoardCases;
 
@@ -55,9 +50,11 @@ private:
 	SDL_Surface* m_BoardImage = NULL;
 
 	//Loads individual image
-	SDL_Surface * loadSurface(std::string path);
+	SDL_Surface* loadSurface(std::string path);
 
 	BoardCase* GetCaseAtPos(int, int);
+
+	bool InitCases();
 
 	void InitChestPieces();
 };
