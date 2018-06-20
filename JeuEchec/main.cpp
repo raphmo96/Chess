@@ -6,8 +6,9 @@ and may not be redistributed without written permission.*/
 #include <SDL_image.h>
 #include <string>
 #include <iostream>
+#include "Coordinates.h"
+#include "Board.h"
 #include "Game.h"
-
 
 int main(int argc, char* args[])
 {

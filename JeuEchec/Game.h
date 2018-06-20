@@ -4,6 +4,10 @@
 #include <iostream>
 #include <string>
 
+class Coordinates;
+class BoardCase;
+class Board;
+
 class Game
 {
 public:
@@ -12,5 +16,13 @@ public:
 	void Run();
 private:
 	bool m_IsHolding;
+	bool m_IsWhiteTurn = true;
+
+	Coordinates m_TempPos;
+	Coordinates m_MousePos;
+	BoardCase* m_CurrentCase;
+	Board m_Board;
+
+	void DropPiece();
 };
 

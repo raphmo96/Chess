@@ -1,5 +1,6 @@
-#include "BoardCase.h"
+#include "Coordinates.h"
 #include "Piece.h"
+#include "BoardCase.h"
 
 BoardCase::BoardCase(SDL_Rect* a_Rect)
 	:m_Rect(a_Rect)

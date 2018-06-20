@@ -6,5 +6,6 @@ class Pawn :
 public:
 	Pawn(bool, SDL_Surface*);
 	~Pawn();
+	bool CanMove(Coordinates, Coordinates);
 };
 

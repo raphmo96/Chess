@@ -6,5 +6,7 @@ class Knight :
 public:
 	Knight(bool, SDL_Surface*);
 	~Knight();
+
+	bool CanMove(Coordinates, Coordinates);
 };
 

@@ -3,28 +3,34 @@
 #include <SDL_image.h>
 #include <vector>
 
-struct Coordinates {
-	int x;
-	int y;
-};
+class Coordinates;
 
 class Piece
 {
 public:
 	Piece(bool, SDL_Surface*);
 	~Piece();
-	void virtual Draw(SDL_Surface*, SDL_Rect*);
-	//Coordinates virtual GetPos();
-	//bool virtual CanMove();
 
-private:
+	void virtual Draw(SDL_Surface*, SDL_Rect*);
+
+	bool virtual IsWhite() { return m_IsWhite; };
+	bool virtual CanMove(Coordinates, Coordinates);
+
+	int getNbMove() { return m_NbMove; };
+
+protected:
 	bool m_IsWhite;
-	bool m_FixedMovement;
+
 	bool m_MixedMovement;
+
 	bool m_CanStackMovement;
-	int m_XMovement;
-	int m_YMovement;
+
+	bool m_CanReverseMovement;
+
 	std::string m_Name;
+
+	int m_NbMove;
+
 	std::vector<Coordinates> m_PossibleMove;
 	SDL_Surface* m_Image;
 };
