@@ -2,8 +2,9 @@
 #include "Piece.h"
 #include "BoardCase.h"
 
-BoardCase::BoardCase(SDL_Rect* a_Rect)
+BoardCase::BoardCase(SDL_Rect* a_Rect, SDL_Surface* a_Highlight)
 	:m_Rect(a_Rect)
+	, m_Highlight(a_Highlight)
 {
 }
 
@@ -13,6 +14,11 @@ void BoardCase::DrawPiece(SDL_Surface* a_Window) {
 	}
 }
 
+void BoardCase::DrawHighlight(SDL_Surface* a_Window) {
+	SDL_BlitSurface(m_Highlight, NULL, a_Window, m_Rect);
+}
+
 BoardCase::~BoardCase()
 {
+	SDL_FreeSurface(m_Highlight);
 }

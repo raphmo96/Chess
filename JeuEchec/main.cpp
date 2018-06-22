@@ -12,7 +12,7 @@ and may not be redistributed without written permission.*/
 
 int main(int argc, char* args[])
 {
-	Game game{};
-	game.Run();
+	Game* game = Game::Instance();;
+	game->Run();
 	return 0;
 }

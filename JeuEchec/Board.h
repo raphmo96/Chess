@@ -5,6 +5,7 @@
 #include <vector>
 
 class BoardCase;
+class Piece;
 class Coordinates;
 
 const int SCREEN_WIDTH = 1280;
@@ -20,27 +21,48 @@ public:
 	Board();
 	~Board();
 
-	//Screen dimension constants
+	//Game constants
 	const int CELLSIZE = BOARD_HEIGHT / GRID_ROWS;
 	const std::string IMAGE_PATH = "Images\\";
 
 	//Starts up SDL and creates window
-	bool init();
+	bool Init();
 
 	//Loads media
-	bool loadMedia();
+	bool LoadMedia();
 
 	//Frees media and shuts down SDL
-	void close();
+	void Close();
 
 	void UpdateWindow() { SDL_UpdateWindowSurface(m_Window); };
+
 	//IMAGE       RECT   WINDOW           RECT
+	//Apply image to a certain surface
 	void BlitSurface() { SDL_BlitSurface(m_BoardImage, NULL, m_ScreenSurface, NULL); }
 
-	BoardCase* GetCaseAtMousePos(Coordinates);
+	//Return the boardCase at a certain position give a coordinates
+	BoardCase* GetCaseAtPos(Coordinates);
+	//Return the boardCase at a certain position give two indexes
+	BoardCase* GetCaseAtPos(int, int);
 
+	//DrawBoard
 	void DrawBoard();
 
+	//Highlight the possible movement of the piece held
+	void MarkPossibleMovement(BoardCase*);
+
+	//Clear the highlight
+	void ResetPossibleMovement();
+
+	//Assert King is safe
+	bool IsKingSafe(bool);
+
+	//Keep track of kings movements
+	void ChangeKingCase(bool, Coordinates);
+
+	void IsCheckmate(bool);
+
+	//Get main surface
 	SDL_Surface* GetBoardSurface() { return m_ScreenSurface; }
 private:
 	std::vector<std::vector<BoardCase*>> m_BoardCases;
@@ -55,12 +77,16 @@ private:
 	SDL_Surface* m_BoardImage = NULL;
 
 	//Loads individual image
-	SDL_Surface* loadSurface(std::string path);
+	SDL_Surface* LoadSurface(std::string path);
 
-	BoardCase* GetCaseAtPos(int, int);
+	BoardCase* m_Kings[2];
 
+	Piece* m_PickedUpPiece;
+
+	//Initialize board;
 	bool InitCases();
 
+	//Initialize pieces;
 	void InitChestPieces();
 };
 

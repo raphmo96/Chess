@@ -11,12 +11,20 @@ public:
 	Piece(bool, SDL_Surface*);
 	~Piece();
 
+	//Draw image on given surface in given rect;
 	void virtual Draw(SDL_Surface*, SDL_Rect*);
 
+	//Return wether the piece if black or white
 	bool virtual IsWhite() { return m_IsWhite; };
+
+	//Assert if the piece can move to the given coordinates, given its initial coordinates
 	bool virtual CanMove(Coordinates, Coordinates);
 
+	//Return total number of movement the piece did
 	int getNbMove() { return m_NbMove; };
+
+	//Increment number of movement
+	void RaiseNbMove() { m_NbMove++; }
 
 protected:
 	bool m_IsWhite;
