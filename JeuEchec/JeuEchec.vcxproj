@@ -147,6 +147,7 @@
     <ClCompile Include="..\..\..\..\..\..\..\Source\Repos\todelete\todelete\stdafx.cpp" />
     <ClCompile Include="Bishop.cpp" />
     <ClCompile Include="BoardCase.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Coordinates.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="King.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Bishop.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="BoardCase.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Coordinates.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="King.h" />

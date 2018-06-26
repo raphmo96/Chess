@@ -21,10 +21,12 @@ public:
 	bool virtual CanMove(Coordinates, Coordinates);
 
 	//Return total number of movement the piece did
-	int getNbMove() { return m_NbMove; };
+	int GetNbMove() { return m_NbMove; };
 
 	//Increment number of movement
 	void RaiseNbMove() { m_NbMove++; }
+
+	std::string GetName() { return m_Name; }
 
 protected:
 	bool m_IsWhite;
@@ -34,6 +36,8 @@ protected:
 	bool m_CanStackMovement;
 
 	bool m_CanReverseMovement;
+
+	bool m_FirstPlay;
 
 	std::string m_Name;
 

@@ -47,6 +47,14 @@ Coordinates operator*(Coordinates const &a_A, int const &a_B)
 	return copy;
 }
 
+Coordinates operator/(Coordinates const &a_A, int const &a_B)
+{
+	Coordinates copy(a_A);
+	copy.m_X /= a_B;
+	copy.m_Y /= a_B;
+	return copy;
+}
+
 bool operator>(Coordinates const &a_A, Coordinates const &a_B)
 {
 	Coordinates copy1(a_A);

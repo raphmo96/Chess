@@ -16,7 +16,7 @@ void Piece::Draw(SDL_Surface* a_Window, SDL_Rect* a_Rect) {
 bool Piece::CanMove(Coordinates a_Start, Coordinates a_End) {
 	Piece* tempPiece;
 	Coordinates tempCoord;
-	Board& board = Game::Instance()->GetBoard();
+	Board* board = Game::Instance()->GetBoard();
 	//For each possible direction
 	for (Coordinates coord : m_PossibleMove) {
 		//if it can move more than one case
@@ -28,7 +28,7 @@ bool Piece::CanMove(Coordinates a_Start, Coordinates a_End) {
 				//Assert is in board
 				if (tempCoord.m_X < 800 && tempCoord.m_Y < 800 &&
 					tempCoord.m_X >= 0 && tempCoord.m_Y >= 0) {
-					tempPiece = board.GetCaseAtPos(tempCoord)->GetPiece();
+					tempPiece = board->GetCaseAtPos(tempCoord)->GetPiece();
 				}
 				else { break; }
 				//Check if piece can move to case
@@ -48,7 +48,7 @@ bool Piece::CanMove(Coordinates a_Start, Coordinates a_End) {
 			//movement for single move piece
 			tempCoord = a_Start + coord;
 			if (tempCoord == a_End) {
-				tempPiece = Game::Instance()->GetBoard().GetCaseAtPos(tempCoord)->GetPiece();
+				tempPiece = board->GetCaseAtPos(tempCoord)->GetPiece();
 				//Assert piece is not the same color or piece moving is a pawn
 				if (tempPiece != NULL && (tempPiece->IsWhite() == this->m_IsWhite || this->m_Name == "Pawn"))
 					return false;
@@ -62,4 +62,5 @@ bool Piece::CanMove(Coordinates a_Start, Coordinates a_End) {
 Piece::~Piece()
 {
 	SDL_FreeSurface(m_Image);
+	m_Image = NULL;
 }

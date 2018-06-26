@@ -20,5 +20,8 @@ void BoardCase::DrawHighlight(SDL_Surface* a_Window) {
 
 BoardCase::~BoardCase()
 {
-	SDL_FreeSurface(m_Highlight);
+	delete m_Rect;
+	if (m_Piece != nullptr) {
+		delete m_Piece;
+	}
 }

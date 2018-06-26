@@ -13,5 +13,6 @@ public:
 Coordinates operator+(Coordinates const& a, Coordinates const& b);
 Coordinates operator-(Coordinates const& a, Coordinates const& b);
 Coordinates operator*(Coordinates const& a, int const& b);
+Coordinates operator/(Coordinates const& a, int const& b);
 bool operator>(Coordinates const& a, Coordinates const& b);
 bool operator==(Coordinates const& a, Coordinates const& b);

@@ -2,7 +2,10 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <tuple>
+
 
 class Coordinates;
 class BoardCase;
@@ -18,9 +21,10 @@ public:
 	void Run();
 
 	//Return the board of the game
-	Board& GetBoard() { return m_Board; };
+	Board* GetBoard() { return m_Board; };
+
 private:
-	Game() {};
+	Game();
 	Game(const Game&);
 	//Get Game instance
 	static Game* m_Instance;
@@ -36,9 +40,25 @@ private:
 
 	Piece* m_CurrentPiece;
 
-	Board m_Board;
+	Board* m_Board;
+
+	void ResetGame();
+
+	void SaveGame();
+
+	void LoadGame();
+
+	//Timer related variables
+	int m_PlayerOneTime = 0;
+	int m_PlayerTwoTime = 0;
+	int m_TimeSinceLastcheck = 0;
 
 	//Validate and place a piece from one case to another
 	void DropPiece();
+	void DropPiece(Coordinates, Coordinates);
+
+	std::vector<std::tuple<Coordinates, Coordinates> > m_Moves = std::vector<std::tuple<Coordinates, Coordinates> >();
+
+	bool m_GameIsOnGoing = false;
 };
 

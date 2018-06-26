@@ -31,6 +31,8 @@ public:
 
 	//Draw highlight on surface
 	void DrawHighlight(SDL_Surface*);
+
+	void ChangeHighlight(SDL_Surface* a_New) { m_Highlight = a_New; };
 private:
 	bool m_isMarkedUp;
 	Piece* m_Piece;
