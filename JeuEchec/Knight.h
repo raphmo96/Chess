@@ -4,7 +4,9 @@ class Knight :
 	public Piece
 {
 public:
-	Knight(bool);
+	Knight(bool, SDL_Surface*);
 	~Knight();
+
+	bool CanMove(Coordinates, Coordinates);
 };
 
