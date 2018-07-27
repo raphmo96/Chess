@@ -4,8 +4,7 @@ class Pawn :
 	public Piece
 {
 public:
-	Pawn(bool, SDL_Surface*);
+	Pawn(bool, SDL_Surface*, Coordinates);
 	~Pawn();
-	bool CanMove(Coordinates, Coordinates);
 };
 

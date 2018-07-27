@@ -4,7 +4,7 @@ class King :
 	public Piece
 {
 public:
-	King(bool, SDL_Surface*);
+	King(bool, SDL_Surface*,Coordinates);
 	~King();
 };
 
