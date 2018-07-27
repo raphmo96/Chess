@@ -1,18 +1,28 @@
 #include "Coordinates.h"
-#include "Bishop.h"
-#include "King.h"
-#include "Knight.h"
-#include "Pawn.h"
-#include "Queen.h"
-#include "Tower.h"
-#include "BoardCase.h"
+#include "Game.h"
 #include "Board.h"
+#include "BoardCase.h"
 #include "Button.h"
+#include "Enums.h"
+#include "PieceFactory.h"
 
 Board::Board()
 {
-	//m_TimerRectP1 = new SDL_Rect({ BOARD_WIDTH, BOARD_HEIGHT / 2 + 25, 100, 20 });
-	//m_TimerRectP2 = new SDL_Rect({ BOARD_WIDTH, BOARD_HEIGHT / 2 - 25, 100, 20 });
+	m_TimerRectP1 = new SDL_Rect({ BOARD_WIDTH + 25, BOARD_HEIGHT / 2 - 60, 100, 20 });
+	m_TimerRectP2 = new SDL_Rect({ BOARD_WIDTH + 25, BOARD_HEIGHT / 2 + 30, 100, 20 });
+	m_StatsP1 = new SDL_Rect({ BOARD_WIDTH + 25,BOARD_HEIGHT - 240,50,20 });
+	m_StatsP2 = new SDL_Rect({ BOARD_WIDTH + 25,10,50,20 });
+	m_RectManaP1 = new SDL_Rect({ BOARD_WIDTH + 25, BOARD_HEIGHT / 2 + 50, 100, 20 });
+	m_RectManaP2 = new SDL_Rect({ BOARD_WIDTH + 25, BOARD_HEIGHT / 2 - 80, 100, 20 });
+	//m_StatsRect;
+}
+
+Board::~Board() {
+	delete m_TimerRectP1;
+	delete m_TimerRectP2;
+	delete m_StatsP1;
+	delete m_StatsP2;
+	Close();
 }
 
 bool Board::Init()
@@ -48,12 +58,15 @@ bool Board::Init()
 			{
 				//Get window surface
 				m_ScreenSurface = SDL_GetWindowSurface(m_Window);
-				//m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
+				TTF_Init();
 				LoadMedia();
 				InitCases();
 				InitChestPieces();
 				InitButtons();
 
+				SetTimer(0, 0);
+				SetTimer(1, 0);
+				DrawUI();
 			}
 		}
 	}
@@ -63,42 +76,47 @@ bool Board::Init()
 void Board::InitChestPieces() {
 	Piece* newPiece = nullptr;
 	BoardCase* boardCase = nullptr;
+	Coordinates coord;
+	bool isWhite = false;
 	for (int i = 0; i < GRID_ROWS; i++) {
 		for (int j = 0; j < GRID_COLUMNS; j++) {
 			if (j == 0 || j == 7) {
 				boardCase = GetCaseAtPos(i, j);
-
+				coord = boardCase->GetCoord();
+				isWhite = j > 3;
 				switch (i) {
 				case 0:
 				case 7:
-					//tower
-					newPiece = new Tower(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "Tower.png"));
+					//Tower
+					newPiece = PieceFactory::CreatePiece(Enums::PieceType::Tower, isWhite, IMAGE_PATH, coord);
 					break;
 				case 1:
 				case 6:
 					//Knight
-					newPiece = new Knight(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "Knight.png"));
+					newPiece = PieceFactory::CreatePiece(Enums::PieceType::Knight, isWhite, IMAGE_PATH, coord);
 					break;
 				case 2:
 				case 5:
-					//bishop
-					newPiece = new Bishop(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "Bishop.png"));
+					//Bishop
+					newPiece = PieceFactory::CreatePiece(Enums::PieceType::Bishop, isWhite, IMAGE_PATH, coord);
 					break;
 				case 3:
 					//King
-					newPiece = new King(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "King.png"));
-					m_Kings[(int)j < 3] = boardCase;
+					newPiece = PieceFactory::CreatePiece(Enums::PieceType::King, isWhite, IMAGE_PATH, coord);
+					m_Kings[(int)isWhite] = boardCase;
 					break;
 				case 4:
 					//Queen
-					newPiece = new Queen(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "Queen.png"));
+					newPiece = PieceFactory::CreatePiece(Enums::PieceType::Queen, isWhite, IMAGE_PATH, coord);
 					break;
 				}
 				boardCase->SetPiece(newPiece);
 			}
 			else if (j == 1 || j == 6) {
+				isWhite = j > 3;
 				boardCase = GetCaseAtPos(i, j);
-				boardCase->SetPiece(new Pawn(j < 3, LoadSurface(IMAGE_PATH + (j > 3 ? "B" : "W") + "Pawn.png")));
+				boardCase->SetPiece(PieceFactory::CreatePiece(Enums::PieceType::Pawn, isWhite, IMAGE_PATH, coord));
+
 			}
 			if (boardCase != nullptr) {
 				boardCase->DrawPiece(m_ScreenSurface);
@@ -112,7 +130,7 @@ bool Board::InitCases() {
 	for (int i = 0; i < GRID_ROWS; i++) {
 		m_BoardCases.push_back(std::vector<BoardCase*>());
 		for (int j = 0; j < GRID_COLUMNS; j++) {
-			m_BoardCases[i].push_back(new BoardCase(new SDL_Rect({ CELLSIZE*i, CELLSIZE*j, CELLSIZE, CELLSIZE }), m_Highlight));
+			m_BoardCases[i].push_back(new BoardCase(new SDL_Rect({ CELLSIZE*i, CELLSIZE*j, CELLSIZE, CELLSIZE }), m_Highlight, m_Spellmark));
 		}
 	}
 	return false;
@@ -121,9 +139,17 @@ bool Board::InitCases() {
 void Board::InitButtons() {
 
 	m_Buttons = std::vector<Button*>();
-	//Create new button and add it to buttons list
-	m_Buttons.push_back(new Button(LoadSurface(IMAGE_PATH + "newButton.png"), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 - 23,150,45 })));
-	m_Buttons.push_back(new Button(LoadSurface(IMAGE_PATH + "loadButton.png"), new SDL_Rect({ BOARD_WIDTH + 310,BOARD_HEIGHT / 2 - 23,150,45 })));
+	AddButton(LoadSurface(IMAGE_PATH + "newButton.png"), new SDL_Rect({ BOARD_WIDTH + 325,BOARD_HEIGHT / 2 + 20,150,45 }), Enums::ButtonType::ResetGame);
+	AddButton(LoadSurface(IMAGE_PATH + "loadButton.png"), new SDL_Rect({ BOARD_WIDTH + 325,BOARD_HEIGHT / 2 - 40,150,45 }), Enums::ButtonType::LoadGame);
+	AddButton(TTF_RenderText_Solid(m_Font, "Heal", m_Color), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 - 70,150,45 }), Enums::ButtonType::HealButton);
+	AddButton(TTF_RenderText_Solid(m_Font, "Freeze", m_Color), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 - 40,150,45 }), Enums::ButtonType::FreezeButton);
+	AddButton(TTF_RenderText_Solid(m_Font, "Regen Mana", m_Color), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 - 10,150,45 }), Enums::ButtonType::RegenManaButton);
+	AddButton(TTF_RenderText_Solid(m_Font, "Skip", m_Color), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 + 20,150,45 }), Enums::ButtonType::SkipButton);
+	AddButton(TTF_RenderText_Solid(m_Font, "Rewind", m_Color), new SDL_Rect({ BOARD_WIDTH + 150,BOARD_HEIGHT / 2 + 50,150,45 }), Enums::ButtonType::RewindButton);
+}
+
+void Board::AddButton(SDL_Surface* a_Image, SDL_Rect* a_Rect, Enums::ButtonType a_Type) {
+	m_Buttons.push_back(new Button(a_Image, a_Rect, a_Type));
 }
 
 bool Board::LoadMedia()
@@ -139,14 +165,16 @@ bool Board::LoadMedia()
 		success = false;
 	}
 	//Open the font
-	//m_Font = TTF_OpenFont("Fonts\\hemi head bd it.ttf", 28);
-	//if (m_Font == NULL)
-	//{
-	//	printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
-	//	success = false;
-	//}
+	m_Font = TTF_OpenFont("Fonts\\hemi head bd it.ttf", 22);
+	if (m_Font == NULL)
+	{
+		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
+	m_Color = { 255,255,255 };
 	m_Highlight = LoadSurface(IMAGE_PATH + "Highlight.png");
 	m_Checkmatelight = LoadSurface(IMAGE_PATH + "Checkmate.png");
+	m_Spellmark = LoadSurface(IMAGE_PATH + "Spellmark.png");
 	return success;
 }
 
@@ -159,22 +187,31 @@ void Board::SetTimer(int a_Player, int a_Time) {
 	int seconds = (int)(a_Time / 1000) % 60;
 	int minutes = (int)((a_Time / (1000 * 60)) % 60);
 	int hours = (int)((a_Time / (1000 * 60 * 60)) % 24);
-	SDL_Color color = { 250,250,250 };
 	std::string timer = std::to_string(hours) + ": " + std::to_string(minutes) + ": " + std::to_string(seconds);
+	//SDL_Surface* textSurface = TTF_RenderText_Solid(m_Font, timer.c_str(), m_Color);
 	if (a_Player) {
-		//m_TimerP1 = SDL_CreateTextureFromSurface(m_Renderer, TTF_RenderText_Solid(m_Font, timer.c_str(), color));
+		SDL_FreeSurface(m_TimerP1);
+		m_TimerP1 = TTF_RenderText_Solid(m_Font, timer.c_str(), m_Color);
 	}
 	else {
-		//m_TimerP2 = SDL_CreateTextureFromSurface(m_Renderer, TTF_RenderText_Solid(m_Font, timer.c_str(), color));
+		SDL_FreeSurface(m_TimerP2);
+		m_TimerP2 = TTF_RenderText_Solid(m_Font, timer.c_str(), m_Color);
 	}
 }
 
 void Board::DrawUI() {
-	//SDL_RenderCopy(m_Renderer, m_TimerP1, m_TimerRectP1, m_TimerRectP1);
-	//SDL_RenderCopy(m_Renderer, m_TimerP2, m_TimerRectP2, m_TimerRectP2);
 	for (int i = 0; i < m_Buttons.size(); i++) {
 		m_Buttons[i]->Draw(m_ScreenSurface);
 	}
+	SDL_Surface* surface;
+	SDL_BlitSurface(m_TimerP1, NULL, m_ScreenSurface, m_TimerRectP1);
+	SDL_BlitSurface(m_TimerP2, NULL, m_ScreenSurface, m_TimerRectP2);
+	surface = TTF_RenderText_Solid(m_Font, std::to_string(m_ManaP1).c_str(), m_Color);
+	SDL_BlitSurface(TTF_RenderText_Solid(m_Font, ("Mana: " + std::to_string(m_ManaP1)).c_str(), m_Color), NULL, m_ScreenSurface, m_RectManaP1);
+	SDL_FreeSurface(surface);
+	surface = TTF_RenderText_Solid(m_Font, std::to_string(m_ManaP2).c_str(), m_Color);
+	SDL_BlitSurface(TTF_RenderText_Solid(m_Font, ("Mana: " + std::to_string(m_ManaP2)).c_str(), m_Color), NULL, m_ScreenSurface, m_RectManaP2);
+	SDL_FreeSurface(surface);
 }
 
 void Board::DrawBoard() {
@@ -190,6 +227,16 @@ BoardCase* Board::GetCaseAtPos(int x, int y) {
 	return m_BoardCases[x][y];
 }
 
+Enums::ButtonType Board::ClickButton(Coordinates a_Pos)
+{
+	for (int i = 0; i < m_Buttons.size(); i++) {
+		if (m_Buttons[i]->Contains(a_Pos)) {
+			return m_Buttons[i]->GetType();
+		}
+	}
+	return Enums::ButtonType::Empty;
+}
+
 BoardCase* Board::GetCaseAtPos(Coordinates a_MousePos) {
 	if (a_MousePos.m_X < 800 && a_MousePos.m_Y < 800 &&
 		a_MousePos.m_X >= 0 && a_MousePos.m_Y >= 0) {
@@ -198,91 +245,115 @@ BoardCase* Board::GetCaseAtPos(Coordinates a_MousePos) {
 	return NULL;
 }
 
-bool Board::MarkPossibleMovement(BoardCase* a_Case) {
-	bool flag = false;
+void Board::MarkPossibleMovement(BoardCase* a_Case) {
 	//Scan through the grid to show possible movement
 	Piece* tempPiece;
 	for (int i = 0; i < GRID_ROWS; i++) {
 		for (int j = 0; j < GRID_COLUMNS; j++) {
 			//Check where piece can go
 			if (a_Case->GetPiece()->CanMove(a_Case->GetCoord(), m_BoardCases[i][j]->GetCoord())) {
-				//If king is moving, assert next position is safe
-				if (a_Case->GetPiece()->GetName() == "King") {
-					m_Kings[a_Case->GetPiece()->IsWhite()] = m_BoardCases[i][j];
-				}
-				//Check if King will be in danger
-				tempPiece = m_BoardCases[i][j]->GetPiece();
-				m_BoardCases[i][j]->SetPiece(a_Case->GetPiece());
-				a_Case->SetPiece(NULL);
-				if (IsKingSafe(m_BoardCases[i][j]->GetPiece()->IsWhite())) {
-					m_BoardCases[i][j]->SetIsMarkedUp(true);
-					flag = true;
-				}
+				m_BoardCases[i][j]->SetIsMarkedUp(true);
+			}
+		}
+	}
+}
 
-				//Set piece back to normal
-				a_Case->SetPiece(m_BoardCases[i][j]->GetPiece());
-				m_BoardCases[i][j]->SetPiece(tempPiece);
-				if (a_Case->GetPiece()->GetName() == "King") {
-					m_Kings[a_Case->GetPiece()->IsWhite()] = a_Case;
+void Board::MarkPossibleTarget(bool a_WhiteTurn, bool a_EnemyTarget) {
+	//Scan through the grid to show possible target
+	Piece* tempPiece;
+	for (int i = 0; i < GRID_ROWS; i++) {
+		for (int j = 0; j < GRID_COLUMNS; j++) {
+			//Check for target
+			if (m_BoardCases[i][j]->GetPiece() == nullptr) continue;
+			if (a_EnemyTarget) {
+				if (m_BoardCases[i][j]->GetPiece()->IsWhite() != a_WhiteTurn) {
+					m_BoardCases[i][j]->SetIsMarkedUp(true);
+					m_BoardCases[i][j]->SetIsTarget(true);
+				}
+			}
+			else {
+				if (m_BoardCases[i][j]->GetPiece()->IsWhite() == a_WhiteTurn) {
+					m_BoardCases[i][j]->SetIsMarkedUp(true);
+					m_BoardCases[i][j]->SetIsTarget(true);
 				}
 			}
 		}
 	}
-	return flag;
 }
+
 
 void Board::ResetPossibleMovement() {
 	for (int i = 0; i < GRID_ROWS; i++) {
 		for (int j = 0; j < GRID_COLUMNS; j++) {
 			m_BoardCases[i][j]->SetIsMarkedUp(false);
+			m_BoardCases[i][j]->SetIsTarget(false);
 		}
 	}
-}
-
-bool Board::IsKingSafe(bool a_IsWhite) {
-	Piece* tempPiece;
-	//Check for each piece
-	for (int i = 0; i < GRID_ROWS; i++) {
-		for (int j = 0; j < GRID_COLUMNS; j++) {
-			tempPiece = m_BoardCases[i][j]->GetPiece();
-			//If piece != IsWhite
-			if (tempPiece != nullptr) {
-				if (tempPiece->IsWhite() != a_IsWhite) {
-					//check if can move on King's case
-					if (tempPiece->CanMove(m_BoardCases[i][j]->GetCoord(), m_Kings[(int)a_IsWhite]->GetCoord()))
-						return false;
-				}
-			}
-
-		}
-	}
-	return true;
 }
 
 bool Board::IsCheckmate(bool a_IsWhite) {
-	for (int i = 0; i < GRID_ROWS; i++) {
-		for (int j = 0; j < GRID_COLUMNS; j++) {
-			if (m_BoardCases[i][j]->GetPiece() == nullptr)continue;
-			if (m_BoardCases[i][j]->GetPiece()->IsWhite() == a_IsWhite) {
-				if (MarkPossibleMovement(m_BoardCases[i][j])) {
-					ResetPossibleMovement();
-					return false;
-				}
-			};
-		}
-
+	if (m_Kings[a_IsWhite]->GetPiece()->GetHP() < 0) {
+		m_Kings[a_IsWhite]->ChangeHighlight(m_Checkmatelight);
+		m_Kings[a_IsWhite]->SetIsMarkedUp(true);
+		DrawBoard();
+		UpdateWindow();
+		return true;
 	}
-	ResetPossibleMovement();
-	m_Kings[a_IsWhite]->ChangeHighlight(m_Checkmatelight);
-	m_Kings[a_IsWhite]->SetIsMarkedUp(true);
-	DrawBoard();
-	UpdateWindow();
-	return true;
+	return false;
 }
 
 void Board::ChangeKingCase(bool a_IsWhite, Coordinates a_Coord) {
 	m_Kings[(int)a_IsWhite] = GetCaseAtPos(a_Coord);
 }
+
+std::string Board::GetTypeName(Enums::PieceType a_Type) {
+	switch (a_Type) {
+	case Enums::PieceType::Pawn:
+		return "Pawn";
+	case Enums::PieceType::Tower:
+		return "Tower";
+	case Enums::PieceType::Knight:
+		return "Knight";
+	case Enums::PieceType::Bishop:
+		return "Bishop";
+	case Enums::PieceType::Queen:
+		return "Queen";
+	case Enums::PieceType::King:
+		return "King";
+	}
+}
+void Board::DrawStat(Piece* a_Piece) {
+	SDL_Rect* pos = a_Piece->IsWhite() ? m_StatsP1 : m_StatsP2;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Type: " + GetTypeName(a_Piece->GetType())).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Damage: " + std::to_string(a_Piece->GetDamage())).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("HP: " + std::to_string(a_Piece->GetHP())).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Armor: " + std::to_string(a_Piece->GetArmor())).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Mana: " + std::to_string(a_Piece->GetMana())).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Skill: " + a_Piece->GetSkillName()).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y += 25;
+	m_StatsSurface = TTF_RenderText_Solid(m_Font, ("Desc: " + a_Piece->GetSkillDescription()).c_str(), m_Color);
+	SDL_BlitSurface(m_StatsSurface, NULL, m_ScreenSurface, pos);
+	SDL_FreeSurface(m_StatsSurface);
+	pos->y -= 150;
+}
+
 
 void Board::ResetBoard(bool a_Continue) {
 
@@ -302,6 +373,7 @@ void Board::ResetBoard(bool a_Continue) {
 		InitCases();
 		InitChestPieces();
 		InitButtons();
+		DrawUI();
 	}
 }
 
@@ -315,6 +387,8 @@ void Board::Close()
 	m_Highlight = NULL;
 	SDL_FreeSurface(m_Checkmatelight);
 	m_Checkmatelight = NULL;
+	SDL_FreeSurface(m_Spellmark);
+	m_Spellmark = NULL;
 
 	//Destroy Renderer
 	SDL_DestroyRenderer(m_Renderer);
@@ -325,24 +399,19 @@ void Board::Close()
 	m_Window = NULL;
 
 	//Destroy Textures
-	SDL_DestroyTexture(m_TimerP1);
+	SDL_FreeSurface(m_TimerP1);
 	m_TimerP1 = NULL;
-	SDL_DestroyTexture(m_TimerP2);
+	SDL_FreeSurface(m_TimerP2);
 	m_TimerP2 = NULL;
+
 	//Close font 
-	//TTF_CloseFont(m_Font);
-	//m_Font = NULL;
+	TTF_CloseFont(m_Font);
+	m_Font = NULL;
 
 	ResetBoard(false);
 
 	//Quit SDL subsystems
 	IMG_Quit();
-	//TTF_Quit();
+	TTF_Quit();
 	SDL_Quit();
-}
-
-Board::~Board() {
-	delete m_TimerRectP1;
-	delete m_TimerRectP2;
-	Close();
 }

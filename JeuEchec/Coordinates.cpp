@@ -14,13 +14,12 @@ Coordinates::Coordinates(int a_X, int a_Y) :
 {
 }
 
-float Coordinates::GetMagnitude() {
-	return sqrt(pow(m_X, 2.0f) + pow(m_Y, 2.0f));
-}
-
-
 Coordinates::~Coordinates()
 {
+}
+
+float Coordinates::GetMagnitude() {
+	return sqrt(pow(m_X, 2.0f) + pow(m_Y, 2.0f));
 }
 
 Coordinates operator+(Coordinates const &a_A, Coordinates const &a_B)
